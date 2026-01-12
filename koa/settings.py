@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-gens-o&)2mbjo6eaem43_y0&&ab-ol9_9emba21rcsexf%-#s2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['koaapi.zinvos.com']
 
 
 # Application definition
