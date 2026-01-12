@@ -321,7 +321,7 @@ def download_badge(request):
         )
     
     # Generate public profile URL
-    public_url = f"https://koamember.zinvos.com/public/{member.KOALM_number}/"
+    public_url = f"https://koamember.vercel.app/public/{member.KOALM_number}/"
     
     # Generate QR code
     qr = qrcode.QRCode(
