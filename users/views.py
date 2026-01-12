@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
@@ -102,6 +103,20 @@ class MemberViewSet(viewsets.ModelViewSet):
     queryset = Member.objects.all().order_by('-created_at')
     serializer_class = MemberSerializer
     permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        queryset = Member.objects.all().order_by('-created_at')
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(KOALM_number__icontains=search) |
+                Q(district__icontains=search) |
+                Q(state__icontains=search) |
+                Q(district_club_name__icontains=search)
+            )
+        return queryset
 
 
 # Member Portal Endpoints
