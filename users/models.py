@@ -9,6 +9,7 @@ class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     email = models.CharField(max_length=100, null=True, blank=True)
+    mobile_number = models.CharField(max_length=100, null=True, blank=True)
     KOALM_number = models.CharField(max_length=100, null=True, blank=True, unique=True)
     address = models.TextField(null=True, blank=True)
     communication_address = models.TextField(null=True, blank=True)
