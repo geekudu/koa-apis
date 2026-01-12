@@ -312,7 +312,7 @@ def download_badge(request):
         )
     
     # Get the PDF template path
-    template_path = 'koa.pdf'
+    template_path = '/home/arun/koa-apis/koa.pdf'
     
     if not os.path.exists(template_path):
         return Response(
