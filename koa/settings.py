@@ -166,6 +166,17 @@ CSRF_TRUSTED_ORIGINS = [
     "https://koamember.vercel.app",  # Production member portal (if applicable)
 ]
 
+# Session cookie settings for cross-origin requests
+SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
+SESSION_COOKIE_SAMESITE = 'None'  # Allow cross-origin cookies
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access for security
+SESSION_COOKIE_AGE = 86400  # 24 hours
+
+# CSRF cookie settings for cross-origin requests
+CSRF_COOKIE_SECURE = True  # Only send cookies over HTTPS
+CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-origin cookies
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access for CSRF token
+
 # Email configuration (for development - using console backend)
 # For production, configure SMTP settings
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
