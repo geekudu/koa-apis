@@ -144,22 +144,26 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-# CORS configuration
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Admin portal
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",  # Member portal
-    "http://127.0.0.1:3001",
-]
-
+# CORS configuration - Allow all origins
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# CSRF trusted origins
+# CORS allowed origins (for reference, but CORS_ALLOW_ALL_ORIGINS overrides this)
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",  # Admin portal
+#     "http://127.0.0.1:3000",
+#     "http://localhost:3001",  # Member portal
+#     "http://127.0.0.1:3001",
+# ]
+
+# CSRF trusted origins - Add production domains
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",  # Admin portal
     "http://127.0.0.1:3000",
     "http://localhost:3001",  # Member portal
     "http://127.0.0.1:3001",
+    "https://koaadmin.vercel.app",  # Production admin portal
+    "https://koamember.vercel.app",  # Production member portal (if applicable)
 ]
 
 # Email configuration (for development - using console backend)
