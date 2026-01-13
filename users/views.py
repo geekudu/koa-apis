@@ -112,9 +112,13 @@ class MemberViewSet(viewsets.ModelViewSet):
                 Q(name__icontains=search) |
                 Q(email__icontains=search) |
                 Q(KOALM_number__icontains=search) |
+                Q(IOA_LM_number__icontains=search) |
+                Q(mobile_number__icontains=search) |
                 Q(district__icontains=search) |
                 Q(state__icontains=search) |
-                Q(district_club_name__icontains=search)
+                Q(district_club_name__icontains=search) |
+                Q(working_hospital_name__icontains=search) |
+                Q(designation__icontains=search)
             )
         return queryset
 
