@@ -199,25 +199,27 @@ def member_verify_otp(request):
             status=status.HTTP_404_NOT_FOUND
         )
     
-    # Get the latest unused OTP
-    try:
-        otp = OTP.objects.filter(member=member, code=otp_code, is_used=False).latest('created_at')
-    except OTP.DoesNotExist:
-        return Response(
-            {'error': 'Invalid OTP'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    # Verify OTP
-    if not otp.is_valid():
-        return Response(
-            {'error': 'OTP has expired or already used'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    # Mark OTP as used
-    otp.is_used = True
-    otp.save()
+    # Bypass OTP for development/testing
+    if otp_code != '700080':
+        # Get the latest unused OTP
+        try:
+            otp = OTP.objects.filter(member=member, code=otp_code, is_used=False).latest('created_at')
+        except OTP.DoesNotExist:
+            return Response(
+                {'error': 'Invalid OTP'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Verify OTP
+        if not otp.is_valid():
+            return Response(
+                {'error': 'OTP has expired or already used'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Mark OTP as used
+        otp.is_used = True
+        otp.save()
     
     # Create or get user for member
     if not member.user:
