@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     MemberViewSet, login_view, logout_view, check_auth_view,
     member_request_otp, member_verify_otp, member_profile,
@@ -12,6 +13,8 @@ router.register(r'members', MemberViewSet, basename='member')
 
 urlpatterns = [
     path('api/', include(router.urls)),
+    # JWT Token endpoints
+    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # Admin portal endpoints
     path('api/auth/login/', login_view, name='login'),
     path('api/auth/logout/', logout_view, name='logout'),

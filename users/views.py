@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -22,6 +23,17 @@ from PIL import Image, ImageDraw
 import qrcode
 from .models import Member, OTP
 from .serializers import MemberSerializer, MemberProfileSerializer, PublicMemberSerializer
+
+
+def get_tokens_for_user(user):
+    """
+    Generate JWT tokens for a user.
+    """
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
 
 
 @api_view(['POST'])
@@ -44,13 +56,15 @@ def login_view(request):
     if user is not None:
         if user.is_superuser:
             login(request, user)
+            tokens = get_tokens_for_user(user)
             return Response({
                 'success': True,
                 'user': {
                     'id': user.id,
                     'username': user.username,
                     'is_superuser': user.is_superuser
-                }
+                },
+                'tokens': tokens
             })
         else:
             return Response(
@@ -236,14 +250,18 @@ def member_verify_otp(request):
     else:
         user = member.user
     
-    # Login the user
+    # Login the user (keep for backward compatibility)
     login(request, user)
     
-    # Return member data
+    # Generate JWT tokens
+    tokens = get_tokens_for_user(user)
+    
+    # Return member data with tokens
     serializer = MemberProfileSerializer(member)
     return Response({
         'success': True,
-        'member': serializer.data
+        'member': serializer.data,
+        'tokens': tokens
     })
 
 
