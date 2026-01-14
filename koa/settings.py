@@ -188,6 +188,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3001",
     "https://koaadmin.vercel.app",  # Production admin portal
     "https://koamember.vercel.app",  # Production member portal (if applicable)
+    "https://member.keralaortho.org",
+    "https://admin.keralaortho.org",
 ]
 
 # Session cookie settings for cross-origin requests

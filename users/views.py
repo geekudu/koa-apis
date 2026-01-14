@@ -360,7 +360,7 @@ def download_badge(request):
         )
     
     # Generate public profile URL
-    public_url = f"https://koamember.vercel.app/public/{member.KOALM_number}/"
+    public_url = f"https://member.keralaortho.org/public/{member.KOALM_number}/"
     
     # Generate QR code
     qr = qrcode.QRCode(
