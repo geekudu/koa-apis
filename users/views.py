@@ -492,7 +492,7 @@ def download_badge(request):
     if member.KOALM_number:
         c.setFont("Helvetica", 12)
         c.setFillColorRGB(0, 0, 0)
-        koalm_text = f"LA NO: {member.KOALM_number}"
+        koalm_text = f"LM NO: {member.KOALM_number}"
         text_width = c.stringWidth(koalm_text, "Helvetica", 12)
         c.drawString(koalm_x + (photo_width - text_width) / 2, koalm_y, koalm_text)
     
