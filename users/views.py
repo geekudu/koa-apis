@@ -480,9 +480,10 @@ def download_badge(request):
     if member.name:
         c.setFont("Helvetica-Bold", 16)
         c.setFillColorRGB(255, 255, 255)
+        drname = "Dr. " + member.name
         # Center the text or adjust as needed
-        text_width = c.stringWidth(member.name, "Helvetica-Bold", 16)
-        c.drawString(name_x + (photo_width - text_width) / 2, name_y, member.name)
+        text_width = c.stringWidth(drname, "Helvetica-Bold", 16)
+        c.drawString(name_x + (photo_width - text_width) / 2, name_y, drname)
     
     # Add KOALM number (positioned below name)
     koalm_x = photo_x
