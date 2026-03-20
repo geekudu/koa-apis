@@ -478,11 +478,38 @@ def download_badge(request):
     name_y = photo_y - 25
     
     if member.name:
-        c.setFont("Helvetica-Bold", 16)
         c.setFillColorRGB(255, 255, 255)
+
         drname = "Dr. " + member.name
-        # Center the text or adjust as needed
-        text_width = c.stringWidth(drname, "Helvetica-Bold", 16)
+        font_name = "Helvetica-Bold"
+
+        # Keep the name on a single line by shrinking the font as needed.
+        # `photo_width` is the width reserved for this text block in the template.
+        max_text_width = photo_width - 10  # padding on both sides (approx)
+        font_size = 16
+        min_font_size = 8
+
+        # Reduce font size until the string fits.
+        while font_size > min_font_size:
+            text_width = c.stringWidth(drname, font_name, font_size)
+            if text_width <= max_text_width:
+                break
+            font_size -= 1
+
+        # If it still doesn't fit (very long names), truncate with ellipsis.
+        text_width = c.stringWidth(drname, font_name, font_size)
+        if text_width > max_text_width:
+            ellipsis = "..."
+            truncated = drname
+            for i in range(len(drname), 0, -1):
+                candidate = drname[:i] + ellipsis
+                if c.stringWidth(candidate, font_name, font_size) <= max_text_width:
+                    truncated = candidate
+                    break
+            drname = truncated
+            text_width = c.stringWidth(drname, font_name, font_size)
+
+        c.setFont(font_name, font_size)
         c.drawString(name_x + (photo_width - text_width) / 2, name_y, drname)
     
     # Add KOALM number (positioned below name)
