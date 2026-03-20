@@ -12,6 +12,8 @@ from django.conf import settings
 from django.utils.crypto import get_random_string
 from django.http import HttpResponse
 import os
+import csv
+from datetime import datetime
 import base64
 import io
 from reportlab.pdfgen import canvas
@@ -554,3 +556,163 @@ def download_badge(request):
     response['Content-Disposition'] = f'attachment; filename="KOA_Badge_{member.KOALM_number}.pdf"'
     
     return response
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def import_members_csv(request):
+    """
+    Import members from an uploaded CSV file.
+
+    The CSV should use headers that match the Member model fields, e.g.:
+    KOALM_number,name,email,IOA_LM_number,working_hospital_name,working_hospital_district,...
+    """
+    uploaded_file = request.FILES.get('file')
+    if not uploaded_file:
+        return Response(
+            {'error': 'CSV file is required (multipart field: file)'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Decode CSV (supports UTF-8 with BOM).
+    try:
+        raw_bytes = uploaded_file.read()
+        try:
+            decoded = raw_bytes.decode('utf-8-sig')
+        except Exception:
+            decoded = raw_bytes.decode('utf-8', errors='ignore')
+    except Exception:
+        decoded = ''
+        return Response(
+            {'error': 'Unable to read uploaded CSV file'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not decoded:
+        return Response(
+            {'error': 'Unable to decode CSV content'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    csv_io = io.StringIO(decoded)
+    reader = csv.DictReader(csv_io)
+    if not reader.fieldnames:
+        return Response(
+            {'error': 'Invalid CSV: missing header row'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def _parse_optional_date(value):
+        if value is None:
+            return None
+        value = str(value).strip()
+        if not value:
+            return None
+        # Try ISO first.
+        try:
+            return datetime.fromisoformat(value).date()
+        except Exception:
+            pass
+        # Common alternates.
+        for fmt in ('%d-%m-%Y', '%d/%m/%Y', '%Y/%m/%d'):
+            try:
+                return datetime.strptime(value, fmt).date()
+            except Exception:
+                continue
+        return None
+
+    CSV_TO_MODEL = {
+        'koalm_number': 'KOALM_number',
+        'ioa_lm_number': 'IOA_LM_number',
+        'name': 'name',
+        'email': 'email',
+        'photo': 'photo',
+        'working_hospital_name': 'working_hospital_name',
+        'working_hospital_district': 'working_hospital_district',
+        'designation': 'designation',
+        'tcmc_reg_no': 'tcmc_reg_no',
+        'ima_life_membership_status': 'ima_life_membership_status',
+        'mbbs_college': 'mbbs_college',
+        'mbbs_year': 'mbbs_year',
+        'pg_diploma_college': 'pg_diploma_college',
+        'pg_diploma_year': 'pg_diploma_year',
+        'pg_degree_college': 'pg_degree_college',
+        'pg_degree_year': 'pg_degree_year',
+        'awards_honours': 'awards_honours',
+        'spouse_name': 'spouse_name',
+        'mobile_number': 'mobile_number',
+        'whatsapp_number': 'whatsapp_number',
+        'landline_hospital': 'landline_hospital',
+        'landline_residence': 'landline_residence',
+        'communication_address': 'communication_address',
+        'address1_place_post': 'address1_place_post',
+        'district': 'district',
+        'pincode': 'pincode',
+        'state': 'state',
+        'district_club_name': 'district_club_name',
+        'address': 'address',
+        'date_of_birth': 'date_of_birth',
+        'registration_date': 'registration_date',
+        'blood_group': 'blood_group',
+    }
+
+    created = 0
+    updated = 0
+    errors = []
+
+    # Update members using KOALM_number as a unique identifier.
+    for row_idx, row in enumerate(reader, start=2):  # start=2 => header row is 1
+        try:
+            # Normalize incoming keys.
+            row_norm = {
+                (k or '').strip().lower(): (v or '').strip()
+                for k, v in (row or {}).items()
+                if k is not None
+            }
+
+            koalm_number = row_norm.get('koalm_number') or row_norm.get('koa_lm_number')
+            name = row_norm.get('name')
+
+            if not koalm_number:
+                errors.append({'row': row_idx, 'error': 'KOALM_number is required'})
+                continue
+            if not name:
+                errors.append({'row': row_idx, 'error': 'name is required'})
+                continue
+
+            defaults = {'name': name}
+
+            # Populate Member fields from CSV (only non-empty values).
+            for csv_key, model_field in CSV_TO_MODEL.items():
+                if csv_key in ('koalm_number', 'name'):
+                    continue
+                raw_val = row_norm.get(csv_key)
+                if raw_val is None or raw_val == '':
+                    continue
+
+                if model_field in ('date_of_birth', 'registration_date'):
+                    parsed_date = _parse_optional_date(raw_val)
+                    if parsed_date is None:
+                        continue
+                    defaults[model_field] = parsed_date
+                else:
+                    defaults[model_field] = raw_val
+
+            member, is_created = Member.objects.update_or_create(
+                KOALM_number=koalm_number,
+                defaults=defaults
+            )
+
+            if is_created:
+                created += 1
+            else:
+                updated += 1
+        except Exception as e:
+            errors.append({'row': row_idx, 'error': str(e)})
+            continue
+
+    return Response({
+        'success': True,
+        'created': created,
+        'updated': updated,
+        'errors': errors,
+    })

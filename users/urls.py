@@ -5,7 +5,7 @@ from .views import (
     MemberViewSet, login_view, logout_view, check_auth_view,
     member_request_otp, member_verify_otp, member_profile,
     member_update_profile, member_logout, public_member_profile,
-    download_badge
+    download_badge, import_members_csv
 )
 
 router = DefaultRouter()
@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/member/profile/update/', member_update_profile, name='member-update-profile'),
     path('api/member/logout/', member_logout, name='member-logout'),
     path('api/member/badge/download/', download_badge, name='download-badge'),
+    path('api/members/import-csv/', import_members_csv, name='import-members-csv'),
     # Public member profile (for QR code/badge)
     path('api/public/member/<str:koalm_number>/', public_member_profile, name='public-member-profile'),
 ]
